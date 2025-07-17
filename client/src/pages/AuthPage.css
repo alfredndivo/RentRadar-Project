@@ -1,0 +1,107 @@
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f4f4f4;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.auth-left {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #000000;
+}
+
+.slide-img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  animation: slide 30s infinite linear;
+  opacity: 0;
+}
+
+.img1 { background-image: url("/edrine.jpg.jpg"); animation-delay: 0s; }
+.img2 { background-image: url("/joy.jpg.jpg"); animation-delay: 10s; }
+.img3 { background-image: url("/blue-bird.jpg.jpg"); animation-delay: 20s; }
+
+@keyframes slide {
+  0%, 33.33% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  33.34%, 100% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.auth-card {
+  flex: 1;
+  padding: 4rem;
+  background: #1e1e1e;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-card h2 {
+  margin-bottom: 2rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-card input {
+  margin-bottom: 1rem;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.auth-button {
+  padding: 1rem;
+  background-color: #2ecc71;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.auth-button:hover {
+  background-color: palegreen;
+  color: #000;
+}
+
+.auth-toggle {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.auth-toggle span {
+  color: #2ecc71;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.auth-forgot {
+  text-align: right;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #aaa;
+}
+
+.auth-forgot:hover {
+  text-decoration: underline;
+  color: #fff;
+}
