@@ -1,31 +1,39 @@
-// middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import Landlord from '../models/Landlord.js';
+import Admin from '../models/Admin.js';
 
-export const authorize = (...allowedRoles) => {
-  return (req, res, next) => {
+export const protect = (requiredRole) => {
+  return async (req, res, next) => {
     try {
-      const authHeader = req.headers.authorization;
+      const token = req.cookies?.token;
 
-      if (!authHeader || !authHeader.startsWith('Bearer')) {
-        return res.status(401).json({ message: 'No token provided' });
+      if (!token) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
       }
 
-      const token = authHeader.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = {
-        id: decoded.id,
-        role: decoded.role,
-      };
-
-      // If specific roles are required, check
-      if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
-        return res.status(403).json({ message: 'Access denied' });
+      let user;
+      if (requiredRole === 'user') {
+        user = await User.findById(decoded.id).select('-password');
+      } else if (requiredRole === 'landlord') {
+        user = await Landlord.findById(decoded.id).select('-password');
+      } else if (requiredRole === 'admin' || requiredRole === 'superadmin') {
+        user = await Admin.findById(decoded.id).select('-password');
+      } else {
+        return res.status(403).json({ message: 'Invalid role access' });
       }
 
+      if (!user || user.role !== requiredRole) {
+        return res.status(403).json({ message: 'Not authorized for this role' });
+      }
+
+      req.user = user;
       next();
     } catch (err) {
-      return res.status(401).json({ message: 'Not authorized' });
+      console.error('Protect middleware error:', err);
+      res.status(401).json({ message: 'Token is invalid or expired' });
     }
   };
 };

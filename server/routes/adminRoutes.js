@@ -8,19 +8,19 @@ import {
   getAnalytics,
 } from '../controllers/adminController.js';
 
-import { authorize } from '../middleware/authMiddleware.js';
+import {protect} from '../middleware/authMiddleware.js';
 import { roleCheck } from '../middleware/roleCheck.js';
 
 const router = express.Router();
 
 // 🧑‍⚖️ SuperAdmin Only
-router.get('/users', authorize, roleCheck(['superadmin']), getAllUsers);
-router.post('/set-role', authorize, roleCheck(['superadmin']), setAdminRole);
+router.get('/users', protect, roleCheck(['superadmin']), getAllUsers);
+router.post('/set-role',protect, roleCheck(['superadmin']), setAdminRole);
 
 // 👮 Admin and SuperAdmin
-router.get('/reports', authorize, roleCheck(['admin', 'superadmin']), getReports);
-router.put('/users/:id/toggle', authorize, roleCheck(['admin', 'superadmin']), toggleUserStatus);
-router.delete('/listings/:id', authorize, roleCheck(['admin', 'superadmin']), deleteListing);
-router.get('/analytics', authorize, roleCheck(['admin', 'superadmin']), getAnalytics);
+router.get('/reports',protect, roleCheck(['admin', 'superadmin']), getReports);
+router.put('/users/:id/toggle',protect, roleCheck(['admin', 'superadmin']), toggleUserStatus);
+router.delete('/listings/:id',protect, roleCheck(['admin', 'superadmin']), deleteListing);
+router.get('/analytics',protect, roleCheck(['admin', 'superadmin']), getAnalytics);
 
 export default router;

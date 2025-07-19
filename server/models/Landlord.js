@@ -18,11 +18,24 @@ const landlordSchema = new mongoose.Schema(
     },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+
     phone: {
       type: String,
       required: true,
       unique: true,
     },
+
+    // ✅ Newly added fields
+    idNumber: {
+      type: String,
+    },
+    location: {
+      type: String,
+    },
+    nationalIdPhoto: {
+      type: String, // stores filename or full URL
+    },
+
     photo: {
       type: String,
     },

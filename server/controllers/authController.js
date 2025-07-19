@@ -10,7 +10,7 @@ import sendEmail from '../utils/sendEmail.js';
 // JWT Generator
 const generateToken = (payload) => {
   return jwt.sign(payload, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
   });
 };
 
@@ -27,7 +27,22 @@ export const registerUser = async (req, res) => {
     const user = await User.create({ name, email, phone, password: hashed });
 
     const token = generateToken({ id: user._id, role: 'user' });
-    res.status(201).json({ token, user, role: 'user' });
+    res.cookie('token',token,{
+      httpOnly:true,
+      secure:false,
+      sameSite:'Lax',
+      maxAge:24*60*60*1000,
+    })
+    .status(201).json({
+      messsage:'landlord registered successfully',
+      lanloard:{
+        id:user._id,
+        name:user.name,
+        email:user.email,
+        phone:user.phone,
+        role:'user',
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: 'User registration failed', error: err.message });
   }
@@ -44,7 +59,22 @@ export const loginUser = async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: 'Invalid password' });
 
     const token = generateToken({ id: user._id, role: 'user' });
-    res.json({ token, user, role: 'user' });
+    res.cookie('token',token,{
+      httpOnly:true,
+      secure:false,
+      sameSite:'Lax',
+      maxAge:24*60*60*1000,
+    })
+    .status(200).json({
+      messsage:'user logged in successfully',
+      lanloard:{
+        id:user._id,
+        name:user.name,
+        email:user.email,
+        phone:user.phone,
+        role:'user',
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
@@ -60,14 +90,33 @@ export const registerLandlord = async (req, res) => {
     if (exists) return res.status(400).json({ message: 'Email already in use' });
 
     const hashed = await bcrypt.hash(password, 12);
-    const landlord = await Landlord.create({ name, email, phone, password: hashed });
+    const landlord = await Landlord.create({ name, email, phone, password: hashed, role: 'landlord' });
 
     const token = generateToken({ id: landlord._id, role: 'landlord' });
-    res.status(201).json({ token, landlord, role: 'landlord' });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(201).json({
+      message: 'Landlord registered successfully',
+      landlord: {
+        id: landlord._id,
+        name: landlord.name,
+        email: landlord.email,
+        phone: landlord.phone,
+        role: 'landlord',
+      },
+    });
   } catch (err) {
+    console.error('Landlord registration error:', err);
     res.status(500).json({ message: 'Landlord registration failed', error: err.message });
   }
 };
+
 
 export const loginLandlord = async (req, res) => {
   try {
@@ -80,11 +129,29 @@ export const loginLandlord = async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: 'Invalid password' });
 
     const token = generateToken({ id: landlord._id, role: 'landlord' });
-    res.json({ token, landlord, role: 'landlord' });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'Lax',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: 'Login successful',
+      landlord: {
+        id: landlord._id,
+        name: landlord.name,
+        email: landlord.email,
+        phone: landlord.phone,
+        role: 'landlord',
+      },
+    });
   } catch (err) {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 };
+
 
 // =============== ADMIN LOGIN ================
 
@@ -99,9 +166,24 @@ export const loginAdmin = async (req, res) => {
     if (!isMatch) return res.status(401).json({ message: 'Invalid password' });
 
     const token = generateToken({ id: admin._id, role: 'admin' });
-    res.json({ token, admin, role: 'admin' });
+    res.cookie('token',token,{
+      httpOnly:true,
+      secure:false,
+      sameSite:'Lax',
+      maxAge:24*60*60*1000,
+    })
+    .status(201).json({
+      messsage:'admin logged in successfully',
+      lanloard:{
+        id:user._id,
+        name:user.name,
+        email:user.email,
+        phone:user.phone,
+        role:'admin',
+      },
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Login failed', error: err.message });
+    res.status(500).json({ message: 'Login for admin failed', error: err.message });
   }
 };
 
@@ -127,17 +209,30 @@ export const getMyProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { id, role } = req.user;
-    const update = req.body;
 
-    const Model = role === 'user' ? User :
-                  role === 'landlord' ? Landlord :
-                  Admin;
+    // DEBUG: see what's coming in
+    console.log('✅ req.body:', req.body);
+    console.log('✅ req.file:', req.file);
 
-    const updated = await Model.findByIdAndUpdate(id, update, { new: true });
+    const updateData = { ...req.body };
+
+    if (req.file) {
+      updateData.nationalIdPhoto = req.file.filename;
+    }
+
+    let Model;
+    if (role === 'user') Model = User;
+    else if (role === 'landlord') Model = Landlord;
+    else if (role === 'admin') Model = Admin;
+    else return res.status(400).json({ message: 'Invalid role' });
+
+    const updated = await Model.findByIdAndUpdate(id, updateData, { new: true });
+
     if (!updated) return res.status(404).json({ message: 'Profile not found' });
 
-    res.json({ message: 'Updated', data: updated });
+    res.status(200).json({ message: 'Profile updated', data: updated });
   } catch (err) {
+    console.error('❌ Profile update failed:', err);
     res.status(500).json({ message: 'Update failed', error: err.message });
   }
 };

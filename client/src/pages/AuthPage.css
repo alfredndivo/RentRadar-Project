@@ -40,7 +40,7 @@
 .auth-card {
   flex: 1;
   padding: 4rem;
-  background: #1e1e1e;
+  background: rgba(0, 0, 255, 0.911);
   color: white;
   display: flex;
   flex-direction: column;
@@ -104,4 +104,15 @@
 .auth-forgot:hover {
   text-decoration: underline;
   color: #fff;
+}
+
+/* Role selection */
+.auth-select {
+  margin-bottom: 1.2rem;
+  padding: 0.9rem ;
+  font-size: 1.5rem;
+  border-radius: 7px solid black;
+  border: none;
+  color: #000;
+  cursor: pointer;
 }

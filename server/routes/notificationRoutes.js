@@ -7,12 +7,12 @@ import {
   markAllAsRead,
   deleteNotification
 } from '../controllers/notificationController.js';
-import { authorize } from '../middleware/authMiddleware.js';
+import {protect} from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 // 🔐 All routes protected
-router.use(authorize);
+router.use(protect);
 
 // 📬 GET /api/notifications
 router.get('/', getUserNotifications);

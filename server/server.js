@@ -5,7 +5,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import listingRoutes from './routes/listingRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
@@ -25,9 +25,15 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true,
+}));
 app.use(morgan('dev'));
+
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Static image serving
@@ -44,10 +50,7 @@ app.use('/api/notifications', notificationRoutes);
 
 // DB connect
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log('✅ MongoDB connected');
     const port = process.env.PORT || 5000;
